@@ -26,7 +26,7 @@ This project demonstrates the application of robotics concepts like task plannin
 ## Installation
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/repository-name.git
+   git clone https://github.com/li-dia/assignment2_exprob.git
    ```
 2. Build the package:
 ```bash
