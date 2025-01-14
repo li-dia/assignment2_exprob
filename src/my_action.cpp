@@ -115,16 +115,20 @@ namespace KCL_rosplan{
 			   // The marker with id " MarkerID " is found
 			   std::cout << "marker with an id is found: "<< MarkerID << std::endl;
 			   if (MarkerID < IDSmall ){
-			       // The least marker ID is 
-			       IDSmall = MarkerID;
+			      // The least marker ID is 
+			      IDSmall = MarkerID;
+			      // The waypoint of the marker that has the smallest ID so far
+			      LeastPos = msg->parameters[1].value; 
 			       
-			       // The waypoint of the marker that has the smallest ID so far
-			       LeastPos = msg->parameters[1].value; 
-			       std::cout << "Updating the least marker ID is: " << IDSmall<< " At the position : " << LeastPos << std::endl; 
+			       
+			      // Set the values on the parameter server
+			      ros::param::set("/IDSmall", IDSmall);
+			      ros::param::set("/LeastPos", LeastPos);
+			      std::cout << "Updated and stored parameters: IDSmall=" << IDSmall << ", LeastPos=" << LeastPos << std::endl;
 			   }
 			   else{
 			      // Print something or do nothing 
-			      std::cout << "No need to update the least marker ID " << IDSmall<<  std::endl;
+			      std::cout << "No need to update the least marker ID " << IDSmall << " At the position : " << LeastPos <<  std::endl;
 			   }
 			   // Stop the robot from rotating
 			   std::cout << "Stop the robot from rotating " << IDSmall<<std::endl;
@@ -140,16 +144,32 @@ namespace KCL_rosplan{
 
 		}
 		else if(msg->name == "go_to_least_id"){
-		std::cout << "Going to the marker with the least ID: " << IDSmall << " At the position : "<< LeastPos << std::endl;
-		int size = sizeof(wps) / sizeof(wps[0]);
-		   for (int i = 0; i < size; i++) {
-        	     if (wps[i].name == LeastPos) {
-            	        goal.target_pose.pose.position.x = wps[i].x;
-            	        goal.target_pose.pose.position.y = wps[i].y;
-        	    }
-    		  }
-    		  ac.sendGoal(goal);
-		  ac.waitForResult();
+		int smallest_id;
+		std::string least_pos;
+
+		// Retrieve the stored values
+		if (ros::param::get("/IDSmall", smallest_id) && ros::param::get("/LeastPos", least_pos)) {
+		    std::cout << "Retrieved parameters: IDSmall=" << smallest_id 
+			      << ", LeastPos=" << least_pos << std::endl;
+
+		    // Update the member variables
+		    IDSmall = smallest_id;
+		    LeastPos = least_pos;
+
+		    // Use the retrieved values to navigate
+		    for (const auto& wp : wps) {
+			if (wp.name == LeastPos) {
+			    goal.target_pose.pose.position.x = wp.x;
+			    goal.target_pose.pose.position.y = wp.y;
+			    break;
+			}
+		    }
+		    ac.sendGoal(goal);
+		    ac.waitForResult();
+		} else {
+		    std::cerr << "Error: Parameters /IDSmall or /LeastPos are not set!" << std::endl;
+		}
+
 		}
 	       return true;
 	}
@@ -158,7 +178,7 @@ int main(int argc, char **argv) {
 
 	ros::init(argc, argv, "assignment2_exprob", ros::init_options::AnonymousName);
 	ros::NodeHandle nh("~");
-	KCL_rosplan::MyActionInterface my_aci(nh);
+	static KCL_rosplan::MyActionInterface my_aci(nh);
 	my_aci.runActionInterface();
 	return 0;
 }
