@@ -64,3 +64,9 @@ rosservice call /rosplan_plan_dispatcher/dispatch_plan
 2. Detect_marker: Detects ArUco markers in the robot's vicinity.
 3. Go_to_least_id: Navigates to the waypoint linked to the smallest detected marker ID.
 
+## Contributors
+
+- Lidia Loubar (ID: 5989908) 
+- Amani Ghomrani (ID: 6237068)
+- Cheima Ferdjallah (ID: 5864751)
+- Yazan Kayali (ID: 5959956)
